@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/chinook_bot/__init__.py
+src/chinook_bot/db.py
+src/chinook_bot/run_v0.py
+src/chinook_bot/v0_agent.py
+src/chinook_bot/v0_tools.py
+src/chinook_support_bot.egg-info/PKG-INFO
+src/chinook_support_bot.egg-info/SOURCES.txt
+src/chinook_support_bot.egg-info/dependency_links.txt
+src/chinook_support_bot.egg-info/requires.txt
+src/chinook_support_bot.egg-info/top_level.txt
+tests/test_db.py

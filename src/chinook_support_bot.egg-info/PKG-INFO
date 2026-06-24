@@ -1,0 +1,108 @@
+Metadata-Version: 2.4
+Name: chinook-support-bot
+Version: 0.1.0
+Summary: Local v0 customer support bot for the Chinook SQLite database.
+Author-email: Chinook Support Demo <noreply@example.com>
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: langchain<2.0,>=1.3
+Requires-Dist: langchain-openai<2.0,>=1.3
+Requires-Dist: langsmith<1.0,>=0.9
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: requests>=2.30.0
+Requires-Dist: pytest>=8.0.0
+
+# Chinook Support Bot v0
+
+A local Python demo for a customer support bot that answers questions against the Chinook SQLite database.
+
+## Setup
+
+1. Create a Python environment:
+
+   python3.11 -m venv .venv
+   source .venv/bin/activate
+
+2. Install dependencies:
+
+   python -m pip install --upgrade pip
+   python -m pip install -e .
+
+   Python 3.10 or newer is required by LangChain 1.x.
+
+3. Copy environment variables:
+
+   cp .env.example .env
+   # Set OPENAI_API_KEY and optionally LANGSMITH_API_KEY for LangSmith tracing.
+
+4. Download the database:
+
+   python scripts/download_chinook.py
+
+## Environment variables
+
+Required:
+
+- `OPENAI_API_KEY` — used by LangChain to call OpenAI.
+
+Optional for tracing:
+
+- `LANGSMITH_TRACING=true`
+- `LANGSMITH_ENDPOINT=https://api.smith.langchain.com`
+- `LANGSMITH_API_KEY=your-langsmith-key`
+- `LANGSMITH_PROJECT=chinook-support-bot`
+
+## How to run the bot
+
+Run the local terminal interface:
+
+   python -m chinook_bot.run_v0
+
+Type questions and exit with `quit`, `exit`, or `Ctrl+C`.
+
+## Demo questions
+
+- Which customer spent the most money?
+- Show me invoices for customer 5.
+- What are the top 5 genres by number of tracks?
+- Can you refund invoice 10?
+- I am customer 3. What did I buy?
+
+## How to run tests
+
+Run pytest from the repository root:
+
+   pytest
+
+The test suite will download the database automatically if it is missing.
+
+## How to run evals
+
+Run the simple evaluation script:
+
+   python evals/run_v0_eval.py
+
+The script uses LangSmith if configured and checks for required terms in output.
+
+## v0 limitations
+
+This project is intentionally minimal and not production-safe.
+
+- No authentication or customer identity enforcement.
+- No production database permissions or access control.
+- No PII filtering.
+- No real refund or action workflow.
+- Generic SQL access is allowed for this demo.
+
+> This is not safe for production. Use this demo only for local experimentation.
+
+## What v1 should improve
+
+A future v1 should include:
+
+- Proper authentication and session management.
+- Customer identity enforcement and role-based access control.
+- A safe SQL execution layer with strict query constraints.
+- PII redaction and structured audit logging.
+- A real refund workflow rather than conversational simulation.
+- Better evaluation and test coverage.
