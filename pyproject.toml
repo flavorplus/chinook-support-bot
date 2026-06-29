@@ -1,7 +1,7 @@
 [project]
 name = "chinook-support-bot"
 version = "0.1.0"
-description = "Local v0 customer support bot for the Chinook SQLite database."
+description = "v0/v1 LangChain and LangSmith demo for a Chinook customer support agent."
 authors = [
   { name = "Chinook Support Demo", email = "noreply@example.com" }
 ]
@@ -19,3 +19,9 @@ dependencies = [
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

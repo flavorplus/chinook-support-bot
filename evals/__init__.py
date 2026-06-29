@@ -1,1 +1,1 @@
-"""Evaluation helpers for Chinook support bot."""
+"""LangSmith comparison evals for the Chinook support bot."""
