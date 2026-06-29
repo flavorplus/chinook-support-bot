@@ -14,8 +14,8 @@ but it had three production-readiness problems:
 
 This demo shows the migration from v0 to v1. v0 uses generic SQL tools to
 demonstrate a common prototype pattern. v1 uses scoped business tools, trusted
-customer runtime context, optional PII middleware, and LangSmith traces/evals to
-demonstrate a production-minded agent architecture.
+application/session context, optional PII middleware, and LangSmith traces/evals
+to demonstrate a production-minded agent architecture.
 
 Key message: LangChain OSS helps build the agent. LangSmith helps debug,
 evaluate, and improve the agent.
@@ -25,7 +25,7 @@ evaluate, and improve the agent.
 | Version | Identity | Agent tools | Safety model |
 | --- | --- | --- | --- |
 | v0 | User-provided text | Generic schema and SQL tools | Blocks destructive SQL keywords |
-| v1 | Trusted runtime `customer_id` | Narrow customer-support actions | Repository queries are always customer-scoped |
+| v1 | Trusted application/session `customer_id` | Narrow customer-support actions | Repository queries are always customer-scoped |
 
 v0 remains available as the intentionally permissive baseline. v1 is the recommended example.
 
@@ -71,7 +71,7 @@ The terminal and evaluation runners assign `LANGSMITH_PROJECT` automatically.
 - v0 traces appear in `chinook-support-bot-v0`.
 - v1 traces appear in `chinook-support-bot-v1`.
 - v0 traces are tagged as the generic SQL agent baseline.
-- v1 traces are tagged as scoped business tools using trusted runtime customer context.
+- v1 traces are tagged as scoped business tools using trusted application/session context.
 
 The lightweight eval runners use these trace labels:
 
@@ -79,6 +79,37 @@ The lightweight eval runners use these trace labels:
 - v1 experiment prefix: `v1-scoped-tools`
 
 This separation makes the generic SQL architecture directly comparable with the customer-scoped v1 architecture.
+
+## Prepare the LangSmith demo
+
+Run one command to seed the exact traces used in the interview walkthrough:
+
+   PYTHONPATH=src python scripts/prepare_demo.py --pii-middleware
+
+Also prepare the shared comparison eval:
+
+   PYTHONPATH=src python scripts/prepare_demo.py --pii-middleware --run-evals
+
+The prep script creates isolated traces for each scenario, so each artifact is
+easy to open in LangSmith during a live demo.
+
+Prepared v0 traces appear in `chinook-support-bot-v0`:
+
+- `v0-happy-path-orders`
+- `v0-security-risk-cross-customer`
+- `v0-bulk-email-risk`
+- `v0-refund-weakness`
+
+Prepared v1 traces appear in `chinook-support-bot-v1`:
+
+- `v1-secure-order-lookup`
+- `v1-cross-customer-refusal`
+- `v1-recommendation`
+- `v1-support-case-escalation`
+- `v1-pii-profile-redaction`
+
+The PII trace demonstrates a model-boundary safeguard. Production deployments
+would also need trace redaction, retention, access-control, and audit policies.
 
 ## What to show in LangSmith
 
@@ -93,6 +124,32 @@ This separation makes the generic SQL architecture directly comparable with the 
 
 Without LangSmith, you debug from the final answer. With LangSmith, you can
 inspect the agent's actual behavior, evaluate changes, and prevent regressions.
+
+## LangSmith navigation checklist
+
+Projects:
+
+- `chinook-support-bot-v0`
+- `chinook-support-bot-v1`
+
+Dataset:
+
+- `chinook-support-bot-regression`
+
+Experiments:
+
+- `v0-baseline`
+- `v1-scoped-tools`
+
+Traces to open:
+
+- `v0-happy-path-orders`
+- `v0-security-risk-cross-customer`
+- `v0-bulk-email-risk`
+- `v1-cross-customer-refusal`
+- `v1-recommendation`
+- `v1-pii-profile-redaction`
+- `v1-support-case-escalation`
 
 ## How to run v0
 
@@ -110,7 +167,9 @@ Run v1 for an authenticated customer ID:
 
 The default customer ID is `5`, so `--customer-id` is optional.
 
-v1 looks up the customer before constructing the agent. The runtime context, not the user message, determines which account the tools can access.
+v1 looks up the customer before constructing the agent. Trusted
+application/session context, not the user message, determines which account the
+tools can access.
 
 Enable LangChain PII middleware to redact email addresses returned by v1
 tools before subsequent model calls:
@@ -182,7 +241,9 @@ Then it runs two comparable experiments:
 - `v1-scoped-tools`
 
 Both agents are evaluated against the same examples and deterministic safety
-checks. This is the primary eval flow for comparing the two architectures.
+checks. This is the primary eval flow for comparing the two architectures. It
+includes happy-path identity/order/recommendation cases as well as safety cases,
+so the eval does not only measure refusals.
 
 ## v0 limitations
 
@@ -212,6 +273,10 @@ Repository scoping and tool-level masking remain the primary protection;
 middleware is an additional model-boundary safeguard. v1 is still a demo. It
 does not implement real authentication, authorization infrastructure, or
 durable support cases.
+
+In this demo, `SupportContext` simulates identity claims from an upstream auth
+layer such as SSO, JWT, or server-side session claims. The important production
+boundary is that the user message never controls the customer ID.
 
 ## Friction log
 

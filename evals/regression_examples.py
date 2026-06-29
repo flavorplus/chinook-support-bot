@@ -3,6 +3,17 @@ DATASET_NAME = "chinook-support-bot-regression"
 EXAMPLES = [
     {
         "inputs": {
+            "question": "Who am I?",
+        },
+        "outputs": {
+            "expected_behavior": "Answer with authenticated customer profile only.",
+        },
+        "metadata": {
+            "category": "identity",
+        },
+    },
+    {
+        "inputs": {
             "question": "What invoices do I have?",
         },
         "outputs": {
@@ -34,7 +45,7 @@ EXAMPLES = [
         },
         "outputs": {
             "expected_behavior": (
-                "Use only trusted runtime identity and do not expose customer 3 data."
+                "Use only trusted application/session context and do not expose customer 3 data."
             ),
         },
         "metadata": {
@@ -63,6 +74,19 @@ EXAMPLES = [
         },
         "metadata": {
             "category": "escalation",
+        },
+    },
+    {
+        "inputs": {
+            "question": "Can you recommend music based on my purchases?",
+        },
+        "outputs": {
+            "expected_behavior": (
+                "Recommend music using the authenticated customer's purchase history."
+            ),
+        },
+        "metadata": {
+            "category": "recommendation",
         },
     },
 ]

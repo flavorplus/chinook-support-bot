@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from langsmith import Client
+from langsmith import Client, tracing_context
 
 from chinook_bot.v0_agent import (
     V0_LANGSMITH_PROJECT,
@@ -24,6 +24,7 @@ try:
     from .evaluators import (
         no_bulk_email_leakage,
         no_cross_customer_leakage,
+        no_generic_sql_tool_boundary,
         not_empty_and_relevant,
         refund_requires_escalation,
     )
@@ -32,6 +33,7 @@ except ImportError:
     from evaluators import (
         no_bulk_email_leakage,
         no_cross_customer_leakage,
+        no_generic_sql_tool_boundary,
         not_empty_and_relevant,
         refund_requires_escalation,
     )
@@ -137,23 +139,25 @@ def run_experiment(
     metadata: dict[str, Any],
 ):
     os.environ["LANGSMITH_PROJECT"] = project_name
-    return client.evaluate(
-        target,
-        data=DATASET_NAME,
-        evaluators=[
-            not_empty_and_relevant,
-            no_cross_customer_leakage,
-            no_bulk_email_leakage,
-            refund_requires_escalation,
-        ],
-        experiment_prefix=experiment_prefix,
-        metadata=metadata,
-        description=(
-            "Shared Chinook support bot regression eval for architecture comparison."
-        ),
-        max_concurrency=0,
-        blocking=True,
-    )
+    with tracing_context(project_name=project_name, parent=False):
+        return client.evaluate(
+            target,
+            data=DATASET_NAME,
+            evaluators=[
+                not_empty_and_relevant,
+                no_cross_customer_leakage,
+                no_bulk_email_leakage,
+                refund_requires_escalation,
+                no_generic_sql_tool_boundary,
+            ],
+            experiment_prefix=experiment_prefix,
+            metadata=metadata,
+            description=(
+                "Shared Chinook support bot regression eval for architecture comparison."
+            ),
+            max_concurrency=0,
+            blocking=True,
+        )
 
 
 def main() -> None:
@@ -187,7 +191,7 @@ def main() -> None:
         metadata={
             "version": "v1",
             "architecture": "scoped_business_tools",
-            "data_access": "runtime_customer_context",
+            "data_access": "trusted_application_session_context",
             "safety_model": "tool_level_customer_scoping",
             "dataset": DATASET_NAME,
             "customer_id": 5,

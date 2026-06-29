@@ -28,7 +28,7 @@ def get_v1_run_config(
         "metadata": {
             "version": "v1",
             "architecture": "scoped_business_tools",
-            "data_access": "runtime_customer_context",
+            "data_access": "trusted_application_session_context",
             "safety_model": "tool_level_customer_scoping",
             "customer_id": context.customer_id,
             "pii_middleware_enabled": pii_middleware_enabled,

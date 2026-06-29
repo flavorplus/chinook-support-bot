@@ -18,7 +18,7 @@ behavior inspectable, comparable, and testable over time.
 
 - v0 uses LangChain `create_agent()` with generic SQL tools.
 - v1 uses LangChain `create_agent()` with scoped business tools.
-- v1 receives a trusted `SupportContext` from the runtime.
+- v1 receives trusted application/session context through `SupportContext`.
 - v1 tools do not accept `customer_id` as an argument.
 - v1 repository queries always bind the trusted customer ID.
 - Optional LangChain PII middleware can redact email addresses from tool results
@@ -26,9 +26,22 @@ behavior inspectable, comparable, and testable over time.
 
 `SupportContext` simulates trusted identity claims from an upstream
 authentication layer. In a real deployment, this would come from SSO, a JWT, or
-server-side session state. The user does not provide the customer ID.
+server-side session state. The important production boundary is that the user
+message never controls the customer ID.
 
 ## 3. v0 baseline demo
+
+Prepare the LangSmith traces:
+
+```bash
+PYTHONPATH=src python scripts/prepare_demo.py --pii-middleware
+```
+
+Prepare traces and the comparison eval:
+
+```bash
+PYTHONPATH=src python scripts/prepare_demo.py --pii-middleware --run-evals
+```
 
 Run:
 
@@ -74,12 +87,13 @@ PYTHONPATH=src python scripts/demo_v1.py --pii-middleware
 
 What to show:
 
-1. Open a v0 happy-path trace.
-2. Open the v0 security-risk trace.
+1. Open `v0-happy-path-orders`.
+2. Open `v0-security-risk-cross-customer`.
 3. Explain why final answers are insufficient without traces.
-4. Open the v1 trace for the same risky prompt.
+4. Open `v1-cross-customer-refusal` for the same risky prompt.
 5. Show that v1 only has scoped business tools.
 6. Show tags and metadata such as version, architecture, and customer ID.
+7. Open `v1-pii-profile-redaction` if demonstrating PII middleware.
 
 Close this section with:
 
@@ -109,6 +123,15 @@ v1-scoped-tools
 
 Both versions are evaluated against the same examples and deterministic safety
 checks. This makes the migration measurable instead of anecdotal.
+
+Navigation checklist:
+
+- Projects: `chinook-support-bot-v0`, `chinook-support-bot-v1`
+- Dataset: `chinook-support-bot-regression`
+- Experiments: `v0-baseline`, `v1-scoped-tools`
+- Traces: `v0-happy-path-orders`, `v0-security-risk-cross-customer`,
+  `v0-bulk-email-risk`, `v1-cross-customer-refusal`, `v1-recommendation`,
+  `v1-pii-profile-redaction`, `v1-support-case-escalation`
 
 For hard safety rules, deterministic evaluators are preferred. For softer
 qualities such as recommendation quality and tone, add LLM-as-judge evaluators
